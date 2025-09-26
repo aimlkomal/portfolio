@@ -1,15 +1,15 @@
 import axios from 'axios';
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import noder from 'noder';
 
-// Create and configure Nodemailer transporter
-const transporter = nodemailer.createTransport({
+// Create and configure Noder transporter
+const transporter = noder.createTransport({
   service: 'gmail',
   host: 'smtp.gmail.com',
   port: 587,
   secure: false, 
   auth: {
-    user: process.env.EMAIL_ADDRESS,
+    user: process.env._ADDRESS,
     pass: process.env.GMAIL_PASSKEY, 
   },
 });
@@ -29,13 +29,13 @@ async function sendTelegramMessage(token, chat_id, message) {
   }
 };
 
-// HTML email template
-const generateEmailTemplate = (name, email, userMessage) => `
+// HTML  template
+const generateTemplate = (name, , userMessage) => `
   <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f4f4f4;">
     <div style="max-width: 600px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
       <h2 style="color: #007BFF;">New Message Received</h2>
       <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>:</strong> ${}</p>
       <p><strong>Message:</strong></p>
       <blockquote style="border-left: 4px solid #007BFF; padding-left: 10px; margin-left: 0;">
         ${userMessage}
@@ -45,24 +45,24 @@ const generateEmailTemplate = (name, email, userMessage) => `
   </div>
 `;
 
-// Helper function to send an email via Nodemailer
-async function sendEmail(payload, message) {
-  const { name, email, message: userMessage } = payload;
+// Helper function to send an  via Noder
+async function send(payload, message) {
+  const { name, , message: userMessage } = payload;
   
   const mailOptions = {
     from: "Portfolio", 
-    to: process.env.EMAIL_ADDRESS, 
+    to: process.env._ADDRESS, 
     subject: `New Message From ${name}`, 
     text: message, 
-    html: generateEmailTemplate(name, email, userMessage), 
-    replyTo: email, 
+    html: generateTemplate(name, , userMessage), 
+    replyTo: , 
   };
   
   try {
     await transporter.sendMail(mailOptions);
     return true;
   } catch (error) {
-    console.error('Error while sending email:', error.message);
+    console.error('Error while sending :', error.message);
     return false;
   }
 };
@@ -70,7 +70,7 @@ async function sendEmail(payload, message) {
 export async function POST(request) {
   try {
     const payload = await request.json();
-    const { name, email, message: userMessage } = payload;
+    const { name, , message: userMessage } = payload;
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chat_id = process.env.TELEGRAM_CHAT_ID;
 
@@ -82,24 +82,24 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const message = `New message from ${name}\n\nEmail: ${email}\n\nMessage:\n\n${userMessage}\n\n`;
+    const message = `New message from ${name}\n\n: ${}\n\nMessage:\n\n${userMessage}\n\n`;
 
     // Send Telegram message
     const telegramSuccess = await sendTelegramMessage(token, chat_id, message);
 
-    // Send email
-    const emailSuccess = await sendEmail(payload, message);
+    // Send 
+    const Success = await send(payload, message);
 
-    if (telegramSuccess && emailSuccess) {
+    if (telegramSuccess && Success) {
       return NextResponse.json({
         success: true,
-        message: 'Message and email sent successfully!',
+        message: 'Message and  sent successfully!',
       }, { status: 200 });
     }
 
     return NextResponse.json({
       success: false,
-      message: 'Failed to send message or email.',
+      message: 'Failed to send message or .',
     }, { status: 500 });
   } catch (error) {
     console.error('API Error:', error.message);
