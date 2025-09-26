@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { NextResponse } from 'next/server';
-import noder from 'noder';
+import nodemailer from 'nodemailer';
 
-// Create and configure Noder transporter
-const transporter = noder.createTransport({
+// Create and configure nodemailer transporter
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   host: 'smtp.gmail.com',
   port: 587,
@@ -30,12 +30,12 @@ async function sendTelegramMessage(token, chat_id, message) {
 };
 
 // HTML  template
-const generateTemplate = (name, , userMessage) => `
+const generateTemplate = (name,  userMessage) => `
   <div style="font-family: Arial, sans-serif; color: #333; padding: 20px; background-color: #f4f4f4;">
     <div style="max-width: 600px; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
       <h2 style="color: #007BFF;">New Message Received</h2>
       <p><strong>Name:</strong> ${name}</p>
-      <p><strong>:</strong> ${}</p>
+      <p><strong>Email:</strong> ${email}</p>
       <p><strong>Message:</strong></p>
       <blockquote style="border-left: 4px solid #007BFF; padding-left: 10px; margin-left: 0;">
         ${userMessage}
@@ -45,17 +45,17 @@ const generateTemplate = (name, , userMessage) => `
   </div>
 `;
 
-// Helper function to send an  via Noder
+// Helper function to send an  via nodemailer
 async function send(payload, message) {
-  const { name, , message: userMessage } = payload;
+  const { name, message: userMessage } = payload;
   
   const mailOptions = {
     from: "Portfolio", 
     to: process.env._ADDRESS, 
     subject: `New Message From ${name}`, 
     text: message, 
-    html: generateTemplate(name, , userMessage), 
-    replyTo: , 
+    html: generateTemplate(name, userMessage), 
+    replyTo:email
   };
   
   try {
@@ -70,7 +70,7 @@ async function send(payload, message) {
 export async function POST(request) {
   try {
     const payload = await request.json();
-    const { name, , message: userMessage } = payload;
+    const { name,  message: userMessage } = payload;
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chat_id = process.env.TELEGRAM_CHAT_ID;
 
@@ -82,7 +82,7 @@ export async function POST(request) {
       }, { status: 400 });
     }
 
-    const message = `New message from ${name}\n\n: ${}\n\nMessage:\n\n${userMessage}\n\n`;
+    const message = `New message from ${name}\n\nEmail: ${email}\n\nMessage:\n\n${userMessage}\n\n`;
 
     // Send Telegram message
     const telegramSuccess = await sendTelegramMessage(token, chat_id, message);
